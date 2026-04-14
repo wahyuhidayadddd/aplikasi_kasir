@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "kasir-app",
+    "slug": "kasir-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "kasirapp",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-barcode-scanner"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
