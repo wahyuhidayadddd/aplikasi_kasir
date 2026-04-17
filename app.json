@@ -9,19 +9,35 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
+      
     },
     "android": {
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.CAMERA"
+      ],
+      "package": "com.wahyuhidayadd.kasirapp"
     },
     "web": {
       "output": "static"
     },
     "plugins": [
-      "expo-router",
-      "expo-barcode-scanner"
+      "expo-router"
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "214a30a5-73b3-48ae-bee0-7b559ffaea4f"
+      }
+    },
+ "runtimeVersion": {
+  "policy": "appVersion"
+},
+    "updates": {
+      "url": "https://u.expo.dev/214a30a5-73b3-48ae-bee0-7b559ffaea4f"
     }
   }
 }
