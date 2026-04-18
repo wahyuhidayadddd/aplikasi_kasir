@@ -1,444 +1,306 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import React from "react";
+import React, { useState } from "react";
 import {
+  Alert,
   ScrollView,
   StatusBar,
+  StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
+import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
 
-// ─── Palette ────────────────────────────────────────────────────────────────
+// ─── KONFIGURASI WARNA ──────────────────────────────────────────────────────
 const C = {
   bg: "#07111f",
   surface: "#0d1e33",
-  surfaceHover: "#112240",
   border: "#1a3558",
-  borderMuted: "#0f2542",
   textPrimary: "#f0f6ff",
   textSecondary: "#7a9bbf",
   textMuted: "#3f6080",
   accent: "#38bdf8",
-  accentDim: "rgba(56,189,248,0.1)",
   green: "#4ade80",
-  greenDim: "rgba(74,222,128,0.1)",
   amber: "#fbbf24",
-  amberDim: "rgba(251,191,36,0.1)",
-  pink: "#f472b6",
-  pinkDim: "rgba(244,114,182,0.1)",
-  purple: "#c084fc",
-  purpleDim: "rgba(192,132,252,0.1)",
-  cyan: "#22d3ee",
-  cyanDim: "rgba(34,211,238,0.1)",
-  blue: "#60a5fa",
-  blueDim: "rgba(96,165,250,0.1)",
+  red: "#f87171",
+  white: "#ffffff",
 };
 
-// ─── Menu items ──────────────────────────────────────────────────────────────
-const menu = [
-  {
-    title: "Pembelian",
-    icon: "shopping-cart",
-    color: C.blue,
-    bg: C.blueDim,
-  },
-  {
-    title: "Mutasi Stok",
-    icon: "inventory",
-    color: C.green,
-    bg: C.greenDim,
-  },
-  {
-    title: "Master Produk",
-    icon: "category",
-    color: C.purple,
-    bg: C.purpleDim,
-  },
-  {
-    title: "Bayar Supplier",
-    icon: "payments",
-    color: C.amber,
-    bg: C.amberDim,
-  },
-  {
-    title: "Pelanggan Bayar",
-    icon: "people",
-    color: C.pink,
-    bg: C.pinkDim,
-  },
-  {
-    title: "Rekapan",
-    icon: "bar-chart",
-    color: C.cyan,
-    bg: C.cyanDim,
-  },
+// ─── DATA DUMMY UNTUK PRESENTASI ───────────────────────────────────────────
+const INITIAL_SUPPLIERS = [
+  { id: 1, name: "PT. Sinar Jaya Abadi", inv: "INV/2026/0401", total: 5200000, status: "Pending" },
+  { id: 2, name: "CV. Makmur Sentosa", inv: "INV/2026/0405", total: 1850000, status: "Pending" },
+  { id: 3, name: "Distributor Sembako Medan", inv: "INV/2026/0410", total: 3400000, status: "Pending" },
 ];
 
-// ─── Main ────────────────────────────────────────────────────────────────────
-export default function HomeScreen() {
+export default function App() {
   return (
-    <View style={{ flex: 1, backgroundColor: C.bg }}>
-      <StatusBar barStyle="light-content" backgroundColor={C.bg} />
+    <SafeAreaProvider>
+      <MainNavigator />
+    </SafeAreaProvider>
+  );
+}
 
-      {/* ── Header ── */}
-      <View
-        style={{
-          backgroundColor: C.surface,
-          paddingHorizontal: 20,
-          paddingTop: 52,
-          paddingBottom: 20,
-          borderBottomWidth: 0.5,
-          borderBottomColor: C.border,
-        }}
-      >
-        {/* Top row */}
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 18,
-          }}
-        >
-          {/* Avatar + greeting */}
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-            <View
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 20,
-                backgroundColor: C.accentDim,
-                borderWidth: 1.5,
-                borderColor: C.accent,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Text
-                style={{ color: C.accent, fontSize: 14, fontWeight: "600" }}
-              >
-                AD
-              </Text>
-            </View>
-            <View>
-              <Text style={{ color: C.textMuted, fontSize: 11 }}>
-                Selamat datang kembali wahyu citut 👋
-              </Text>
-              <Text
-                style={{
-                  color: C.textPrimary,
-                  fontSize: 17,
-                  fontWeight: "700",
-                  marginTop: 1,
-                }}
-              >
-                Dashboard
-              </Text>
-            </View>
+function MainNavigator() {
+  const [screen, setScreen] = useState("Home");
+  const insets = useSafeAreaInsets();
+
+  const renderContent = () => {
+    switch (screen) {
+      case "Home": return <HomeScreen nav={setScreen} />;
+      case "Mutasi": return <MutasiScreen onBack={() => setScreen("Home")} />;
+      case "Supplier": return <SupplierScreen onBack={() => setScreen("Home")} />;
+      case "Rekapan": return <RekapanScreen onBack={() => setScreen("Home")} />;
+      default: return <HomeScreen nav={setScreen} />;
+    }
+  };
+
+  return (
+    <View style={{ flex: 1, backgroundColor: C.bg, paddingTop: insets.top }}>
+      <StatusBar barStyle="light-content" />
+      {renderContent()}
+    </View>
+  );
+}
+
+// ─── 1. HOME SCREEN ────────────────────────────────────────────────────────
+function HomeScreen({ nav }) {
+  return (
+    <ScrollView style={styles.flex}>
+      <View style={styles.header}>
+        <View style={styles.avatarRow}>
+          <View style={styles.avatar}><Text style={{color: C.accent, fontWeight: '700'}}>W</Text></View>
+          <View>
+            <Text style={styles.greet}>Halo, Wahyu 👋</Text>
+            <Text style={styles.brand}>Owner Dashboard</Text>
           </View>
-
-          {/* Notification bell */}
-          <View
-            style={{
-              width: 38,
-              height: 38,
-              borderRadius: 19,
-              backgroundColor: C.surfaceHover,
-              borderWidth: 0.5,
-              borderColor: C.border,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <MaterialIcons name="notifications-none" size={20} color={C.textSecondary} />
-            <View
-              style={{
-                position: "absolute",
-                top: 8,
-                right: 8,
-                width: 7,
-                height: 7,
-                borderRadius: 4,
-                backgroundColor: "#f43f5e",
-                borderWidth: 1.5,
-                borderColor: C.surface,
-              }}
-            />
-          </View>
-        </View>
-
-        {/* Stat chips row */}
-        <View style={{ flexDirection: "row", gap: 8 }}>
-          <StatChip label="Hari Ini" value="Rp 2,5jt" valueColor={C.accent} />
-          <StatChip label="Lunas" value="12 trx" valueColor={C.green} />
-          <StatChip label="Pending" value="5 trx" valueColor={C.amber} />
         </View>
       </View>
 
-      {/* ── Scrollable Body ── */}
-      <ScrollView
-        style={{ paddingHorizontal: 16 }}
-        contentContainerStyle={{ paddingBottom: 120 }}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Section: Menu Utama */}
-        <SectionLabel text="Menu Utama" />
-
-        <View
-          style={{
-            flexDirection: "row",
-            flexWrap: "wrap",
-            gap: 10,
-            marginBottom: 20,
-          }}
-        >
-          {menu.map((item, i) => (
-            <MenuCard key={i} item={item} />
-          ))}
+      <View style={styles.container}>
+        <View style={styles.statGrid}>
+          <StatBox label="Omzet" val="Rp 2.5jt" col={C.accent} />
+          <StatBox label="Lunas" val="12 Trx" col={C.green} />
+          <StatBox label="Pending" val="5 Trx" col={C.amber} />
         </View>
 
-        {/* Section: Penjualan */}
-        <SectionLabel text="Penjualan Hari Ini" />
+        <Text style={styles.label}>MENU MANAJEMEN</Text>
+        <View style={styles.menuGrid}>
+          <MenuBtn label="Mutasi Stok" icon="inventory" col={C.green} onPress={() => nav("Mutasi")} />
+          <MenuBtn label="Bayar Supplier" icon="payments" col={C.amber} onPress={() => nav("Supplier")} />
+          <MenuBtn label="Rekapan" icon="bar-chart" col={C.accent} onPress={() => nav("Rekapan")} />
+        </View>
 
-        <View
-          style={{
-            backgroundColor: C.surface,
-            borderRadius: 20,
-            padding: 18,
-            borderWidth: 0.5,
-            borderColor: C.border,
-            marginBottom: 12,
-          }}
-        >
-          {/* Top: amount + date */}
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              marginBottom: 14,
-            }}
+        <Text style={styles.label}>PENJUALAN TERAKHIR</Text>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Rp 2.500.000</Text>
+          <Text style={{color: C.textMuted, fontSize: 12}}>Total Penjualan Hari Ini</Text>
+          <View style={styles.hr} />
+          <Row label="Tunai" val="Rp 1.800.000" />
+          <Row label="Transfer" val="Rp 700.000" />
+        </View>
+      </View>
+    </ScrollView>
+  );
+}
+
+// ─── 2. MUTASI STOK SCREEN (AKTIF) ─────────────────────────────────────────
+function MutasiScreen({ onBack }) {
+  const [tab, setTab] = useState("masuk");
+  const handleSimpan = () => Alert.alert("Sukses", `Data mutasi stok ${tab} berhasil disimpan!`);
+
+  return (
+    <View style={styles.flex}>
+      <Header title="Mutasi Stok" onBack={onBack} />
+      <ScrollView style={styles.container}>
+        <View style={styles.tabBar}>
+          <TouchableOpacity style={[styles.tab, tab === "masuk" && {backgroundColor: C.green}]} onPress={() => setTab("masuk")}>
+            <Text style={[styles.tabText, tab === "masuk" && {color: C.bg}]}>STOK MASUK</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.tab, tab === "keluar" && {backgroundColor: C.red}]} onPress={() => setTab("keluar")}>
+            <Text style={[styles.tabText, tab === "keluar" && {color: C.white}]}>STOK KELUAR</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.card}>
+          <Input label="Cari Nama Barang" placeholder="Contoh: Beras Premium" />
+          <Input label="Jumlah / Qty" placeholder="0" keyboard="numeric" />
+          <Input label="Keterangan" placeholder="Contoh: Retur Supplier / Barang Rusak" multiline />
+          <TouchableOpacity 
+            style={[styles.btnFull, {backgroundColor: tab === "masuk" ? C.green : C.red}]}
+            onPress={handleSimpan}
           >
-            <View>
-              <Text style={{ color: C.textMuted, fontSize: 11, marginBottom: 4 }}>
-                Total penjualan
-              </Text>
-              <Text
-                style={{
-                  color: C.textPrimary,
-                  fontSize: 26,
-                  fontWeight: "700",
-                  letterSpacing: -0.5,
-                }}
-              >
-                Rp 2.500.000
-              </Text>
-              {/* Growth badge */}
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 4,
-                  marginTop: 6,
-                  alignSelf: "flex-start",
-                  backgroundColor: C.greenDim,
-                  borderRadius: 6,
-                  paddingHorizontal: 8,
-                  paddingVertical: 3,
-                }}
-              >
-                <MaterialIcons name="trending-up" size={12} color={C.green} />
-                <Text style={{ color: C.green, fontSize: 11, fontWeight: "600" }}>
-                  +14% dari kemarin
-                </Text>
-              </View>
-            </View>
-
-            <View
-              style={{
-                backgroundColor: C.surfaceHover,
-                borderRadius: 8,
-                borderWidth: 0.5,
-                borderColor: C.borderMuted,
-                paddingHorizontal: 10,
-                paddingVertical: 5,
-              }}
-            >
-              <Text style={{ color: C.textMuted, fontSize: 10 }}>
-                15 Apr 2026
-              </Text>
-            </View>
-          </View>
-
-          {/* Divider */}
-          <View
-            style={{
-              height: 0.5,
-              backgroundColor: C.borderMuted,
-              marginBottom: 12,
-            }}
-          />
-
-          {/* Rows */}
-          <SalesRow
-            label="Lunas"
-            sub="12 transaksi"
-            amount="Rp 1.800.000"
-            color={C.green}
-          />
-          <SalesRow
-            label="Belum Lunas"
-            sub="5 transaksi"
-            amount="Rp 700.000"
-            color={C.amber}
-          />
-
-          {/* Progress bar */}
-          <View style={{ marginTop: 16 }}>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                marginBottom: 6,
-              }}
-            >
-              <Text style={{ color: C.textMuted, fontSize: 10 }}>
-                Tingkat pelunasan
-              </Text>
-              <Text style={{ color: C.textSecondary, fontSize: 10 }}>72%</Text>
-            </View>
-            <View
-              style={{
-                height: 5,
-                backgroundColor: C.borderMuted,
-                borderRadius: 99,
-                overflow: "hidden",
-              }}
-            >
-              <View
-                style={{
-                  width: "72%",
-                  height: "100%",
-                  borderRadius: 99,
-                  backgroundColor: C.accent,
-                }}
-              />
-            </View>
-          </View>
+            <Text style={styles.btnFullText}>KONFIRMASI MUTASI</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
   );
 }
 
-// ─── Sub-components ──────────────────────────────────────────────────────────
+// ─── 3. BAYAR SUPPLIER SCREEN (AKTIF) ──────────────────────────────────────
+function SupplierScreen({ onBack }) {
+  const [data, setData] = useState(INITIAL_SUPPLIERS);
 
-function StatChip({ label, value, valueColor }) {
-  return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: C.surfaceHover,
-        borderRadius: 12,
-        borderWidth: 0.5,
-        borderColor: C.borderMuted,
-        paddingHorizontal: 10,
-        paddingVertical: 8,
+  const bayar = (id, name) => {
+    Alert.alert("Konfirmasi", `Bayar tagihan ke ${name}?`, [
+      { text: "Batal" },
+      { text: "Ya, Bayar", onPress: () => {
+        setData(data.filter(item => item.id !== id));
+        Alert.alert("Berhasil", "Pembayaran telah dicatat.");
       }}
-    >
-      <Text style={{ color: C.textMuted, fontSize: 10, marginBottom: 3 }}>
-        {label}
-      </Text>
-      <Text style={{ color: valueColor, fontSize: 13, fontWeight: "700" }}>
-        {value}
-      </Text>
+    ]);
+  };
+
+  return (
+    <View style={styles.flex}>
+      <Header title="Bayar Supplier" onBack={onBack} />
+      <ScrollView style={styles.container}>
+        <View style={[styles.card, {backgroundColor: C.amber}]}>
+          <Text style={{color: '#000', fontWeight: '600'}}>Total Hutang</Text>
+          <Text style={{color: '#000', fontSize: 28, fontWeight: 'bold'}}>Rp 10.450.000</Text>
+        </View>
+
+        <Text style={styles.label}>DAFTAR TAGIHAN PENDING</Text>
+        {data.length > 0 ? data.map(item => (
+          <View key={item.id} style={styles.itemCard}>
+            <View style={styles.rowBetween}>
+              <View>
+                <Text style={styles.itemTitle}>{item.name}</Text>
+                <Text style={styles.itemSub}>{item.inv}</Text>
+              </View>
+              <View style={styles.badge}><Text style={styles.badgeText}>PENDING</Text></View>
+            </View>
+            <View style={styles.hr} />
+            <View style={styles.rowBetween}>
+              <Text style={styles.itemPrice}>Rp {item.total.toLocaleString()}</Text>
+              <TouchableOpacity style={styles.btnPay} onPress={() => bayar(item.id, item.name)}>
+                <Text style={styles.btnPayText}>BAYAR</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )) : (
+          <View style={{alignItems: 'center', marginTop: 40}}>
+            <MaterialIcons name="check-circle" size={50} color={C.green} />
+            <Text style={{color: C.textMuted, marginTop: 10}}>Semua tagihan lunas!</Text>
+          </View>
+        )}
+      </ScrollView>
     </View>
   );
 }
 
-function SectionLabel({ text }) {
+// ─── 4. REKAPAN SCREEN ──────────────────────────────────────────────────────
+function RekapanScreen({ onBack }) {
   return (
-    <Text
-      style={{
-        color: C.textMuted,
-        fontSize: 10,
-        fontWeight: "700",
-        letterSpacing: 1.2,
-        textTransform: "uppercase",
-        marginTop: 18,
-        marginBottom: 10,
-      }}
-    >
-      {text}
-    </Text>
-  );
-}
+    <View style={styles.flex}>
+      <Header title="Laporan Rekapan" onBack={onBack} />
+      <ScrollView style={styles.container}>
+        <View style={styles.statGrid}>
+          <View style={[styles.statChip, {backgroundColor: C.surface}]}>
+            <Text style={styles.statLabel}>Laba Bersih</Text>
+            <Text style={[styles.statVal, {color: C.green}]}>Rp 12.4jt</Text>
+          </View>
+          <View style={[styles.statChip, {backgroundColor: C.surface}]}>
+            <Text style={styles.statLabel}>Total Pengeluaran</Text>
+            <Text style={[styles.statVal, {color: C.red}]}>Rp 3.1jt</Text>
+          </View>
+        </View>
 
-function MenuCard({ item }) {
-  return (
-    <TouchableOpacity
-      activeOpacity={0.75}
-      style={{
-        width: "47.5%",
-        backgroundColor: C.surface,
-        borderRadius: 18,
-        padding: 14,
-        borderWidth: 0.5,
-        borderColor: C.border,
-        gap: 10,
-      }}
-    >
-      {/* Icon bubble */}
-      <View
-        style={{
-          width: 42,
-          height: 42,
-          borderRadius: 13,
-          backgroundColor: item.bg,
-          alignItems: "center",
-          justifyContent: "center",
-          borderWidth: 0.5,
-          borderColor: item.color + "33",
-        }}
-      >
-        <MaterialIcons name={item.icon} size={20} color={item.color} />
-      </View>
-
-      <Text
-        style={{
-          color: C.textPrimary,
-          fontSize: 13,
-          fontWeight: "600",
-          letterSpacing: 0.1,
-        }}
-      >
-        {item.title}
-      </Text>
-    </TouchableOpacity>
-  );
-}
-
-function SalesRow({ label, sub, amount, color }) {
-  return (
-    <View
-      style={{
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        paddingVertical: 8,
-      }}
-    >
-      <View>
-        <Text style={{ color: C.textPrimary, fontSize: 13, fontWeight: "500" }}>
-          {label}
-        </Text>
-        <Text style={{ color: C.textMuted, fontSize: 10, marginTop: 2 }}>
-          {sub}
-        </Text>
-      </View>
-      <Text style={{ color: color, fontSize: 13, fontWeight: "700" }}>
-        {amount}
-      </Text>
+        <Text style={styles.label}>TOP PRODUK TERLARIS</Text>
+        <View style={styles.card}>
+          <Row label="1. Kopi Gula Aren" val="145 Unit" />
+          <Row label="2. Indomie Double" val="98 Unit" />
+          <Row label="3. Es Teh Manis" val="82 Unit" />
+        </View>
+      </ScrollView>
     </View>
   );
 }
+
+// ─── HELPER COMPONENTS ─────────────────────────────────────────────────────
+const Header = ({ title, onBack }) => (
+  <View style={styles.headerSub}>
+    <TouchableOpacity onPress={onBack}><MaterialIcons name="arrow-back" size={26} color={C.white} /></TouchableOpacity>
+    <Text style={styles.headerSubTitle}>{title}</Text>
+    <View style={{width: 26}} />
+  </View>
+);
+
+const MenuBtn = ({ label, icon, col, onPress }) => (
+  <TouchableOpacity style={styles.menuCard} onPress={onPress}>
+    <View style={[styles.iconCircle, {backgroundColor: col + '20', borderColor: col + '40'}]}>
+      <MaterialIcons name={icon} size={24} color={col} />
+    </View>
+    <Text style={styles.menuLabel}>{label}</Text>
+  </TouchableOpacity>
+);
+
+const StatBox = ({ label, val, col }) => (
+  <View style={styles.statChip}>
+    <Text style={styles.statLabel}>{label}</Text>
+    <Text style={[styles.statVal, {color: col}]}>{val}</Text>
+  </View>
+);
+
+const Row = ({ label, val }) => (
+  <View style={styles.rowBetween}>
+    <Text style={{color: C.textSecondary}}>{label}</Text>
+    <Text style={{color: C.white, fontWeight: 'bold'}}>{val}</Text>
+  </View>
+);
+
+const Input = ({ label, placeholder, keyboard, multiline }) => (
+  <View style={{marginBottom: 15}}>
+    <Text style={styles.inputLabel}>{label}</Text>
+    <TextInput 
+      style={[styles.inputField, multiline && {height: 80, textAlignVertical: 'top'}]}
+      placeholder={placeholder}
+      placeholderTextColor={C.textMuted}
+      keyboardType={keyboard || 'default'}
+      multiline={multiline}
+    />
+  </View>
+);
+
+// ─── STYLES ────────────────────────────────────────────────────────────────
+const styles = StyleSheet.create({
+  flex: { flex: 1 },
+  container: { padding: 20 },
+  header: { padding: 20, backgroundColor: C.surface, borderBottomWidth: 1, borderColor: C.border },
+  avatarRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: C.accent + '20', borderWidth: 1, borderColor: C.accent, alignItems: 'center', justifyContent: 'center' },
+  greet: { color: C.textMuted, fontSize: 12 },
+  brand: { color: C.white, fontSize: 18, fontWeight: 'bold' },
+  statGrid: { flexDirection: 'row', gap: 10, marginBottom: 10 },
+  statChip: { flex: 1, backgroundColor: C.surface, padding: 15, borderRadius: 16, borderWidth: 1, borderColor: C.border },
+  statLabel: { color: C.textMuted, fontSize: 10 },
+  statVal: { fontSize: 15, fontWeight: 'bold', marginTop: 4 },
+  label: { color: C.textMuted, fontSize: 11, fontWeight: 'bold', letterSpacing: 1, marginTop: 25, marginBottom: 15 },
+  menuGrid: { flexDirection: 'row', justifyContent: 'space-between' },
+  menuCard: { width: '31%', backgroundColor: C.surface, padding: 15, borderRadius: 20, alignItems: 'center', borderWidth: 1, borderColor: C.border },
+  iconCircle: { width: 48, height: 48, borderRadius: 24, borderWidth: 1, alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
+  menuLabel: { color: C.white, fontSize: 10, fontWeight: '600', textAlign: 'center' },
+  card: { backgroundColor: C.surface, padding: 20, borderRadius: 24, borderWidth: 1, borderColor: C.border },
+  cardTitle: { color: C.white, fontSize: 26, fontWeight: 'bold' },
+  hr: { height: 1, backgroundColor: C.border, marginVertical: 15 },
+  rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 4 },
+  headerSub: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20 },
+  headerSubTitle: { color: C.white, fontSize: 20, fontWeight: 'bold' },
+  tabBar: { flexDirection: 'row', backgroundColor: C.surface, padding: 5, borderRadius: 15, marginBottom: 20 },
+  tab: { flex: 1, paddingVertical: 12, alignItems: 'center', borderRadius: 12 },
+  tabText: { fontWeight: 'bold', fontSize: 12, color: C.textMuted },
+  inputLabel: { color: C.textSecondary, fontSize: 12, marginBottom: 8 },
+  inputField: { backgroundColor: C.bg, borderRadius: 12, padding: 15, color: C.white, borderWidth: 1, borderColor: C.border },
+  btnFull: { marginTop: 10, padding: 18, borderRadius: 15, alignItems: 'center' },
+  btnFullText: { fontWeight: 'bold', letterSpacing: 1 },
+  itemCard: { backgroundColor: C.surface, padding: 18, borderRadius: 22, marginBottom: 15, borderWidth: 1, borderColor: C.border },
+  itemTitle: { color: C.white, fontWeight: 'bold', fontSize: 16 },
+  itemSub: { color: C.textMuted, fontSize: 12 },
+  itemPrice: { color: C.white, fontSize: 18, fontWeight: 'bold' },
+  badge: { backgroundColor: C.amber + '20', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, borderWidth: 1, borderColor: C.amber },
+  badgeText: { color: C.amber, fontSize: 10, fontWeight: 'bold' },
+  btnPay: { backgroundColor: C.accent, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12 },
+  btnPayText: { color: C.bg, fontWeight: 'bold', fontSize: 13 },
+});
