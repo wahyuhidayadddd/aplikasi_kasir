@@ -5,15 +5,18 @@ import React, { useState } from "react";
 import {
   Dimensions,
   SafeAreaView,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View
 } from "react-native";
+import { loginApi } from "../services/auth";
+import { StyleSheet } from "react-native";
 
 const { width } = Dimensions.get("window");
-const styles = StyleSheet.create({
+
+export default function LoginScreen({ goRegister }) {
+  const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -118,9 +121,28 @@ const styles = StyleSheet.create({
     color: "#6B7280",
   },
 });
-export default function LoginScreen({ goRegister }) {
   const router = useRouter();
   const [secure, setSecure] = useState(true);
+const [email, setEmail] = useState("");
+const [password, setPassword] = useState("");
+const [loading, setLoading] = useState(false);
+
+const handleLogin = async () => {
+  setLoading(true);
+
+  const res = await loginApi(email, password);
+
+  setLoading(false);
+
+  if (res.success) {
+    console.log("TOKEN:", res.data.token);
+
+    router.replace("/home");
+  } else {
+    alert(res.message);
+  }
+};
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -145,22 +167,26 @@ export default function LoginScreen({ goRegister }) {
           {/* Email */}
           <View style={styles.inputBox}>
             <Ionicons name="mail-outline" size={20} color="#9CA3AF" />
-            <TextInput
-              placeholder="Email"
-              placeholderTextColor="#9CA3AF"
-              style={styles.input}
-            />
+        <TextInput
+  placeholder="Email"
+  placeholderTextColor="#9CA3AF"
+  style={styles.input}
+  value={email}
+  onChangeText={setEmail}
+/>
           </View>
 
           {/* Password */}
           <View style={styles.inputBox}>
             <Ionicons name="lock-closed-outline" size={20} color="#9CA3AF" />
-            <TextInput
-              placeholder="Password"
-              placeholderTextColor="#9CA3AF"
-              secureTextEntry={secure}
-              style={styles.input}
-            />
+<TextInput
+  placeholder="Password"
+  placeholderTextColor="#9CA3AF"
+  secureTextEntry={secure}
+  style={styles.input}
+  value={password}
+  onChangeText={setPassword}
+/>
             <TouchableOpacity onPress={() => setSecure(!secure)}>
               <Ionicons
                 name={secure ? "eye-off-outline" : "eye-outline"}
@@ -171,10 +197,7 @@ export default function LoginScreen({ goRegister }) {
           </View>
 
           {/* Button */}
-   <TouchableOpacity
-  activeOpacity={0.8}
-  onPress={() => router.replace("/home")}
->
+ <TouchableOpacity activeOpacity={0.8} onPress={handleLogin}>
   <LinearGradient
     colors={["#4F46E5", "#6366F1"]}
     style={styles.button}
@@ -200,4 +223,5 @@ export default function LoginScreen({ goRegister }) {
       </View>
     </SafeAreaView>
   );
+  
 }
